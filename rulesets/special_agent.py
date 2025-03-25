@@ -48,6 +48,10 @@ def _formspec():
                 parameter_form=String(
                     title=Title("Hostname"),
                     prefill=DefaultValue(""),
+                    help_text=Help(
+                        "Host for that snapshots should exists. "
+                        "Use only hostname not FQDN."
+                    )
                 ),
             ),
         }
