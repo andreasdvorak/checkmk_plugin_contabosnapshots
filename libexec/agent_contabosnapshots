@@ -1,0 +1,99 @@
+#!/usr/bin/python3
+
+# Store in your Checkmk site at:
+# ~/local/lib/python3/cmk_addons/plugins/contabosnapshots/libexec/agent_contabosnapshots
+
+from urllib.parse import urlencode
+import argparse
+import json
+import requests
+
+class Contabo:
+    def __init__(self, **kwargs) -> None:
+        self.__client_id: str     = kwargs.get('clientid', None)
+        self.__client_secret: str = kwargs.get('clientsecret', None)
+        self.__api_user: str      = kwargs.get('apiuser', None)
+        self.__api_password: str  = kwargs.get('apipassword', None)
+
+    def getAccessToken(self) -> str:
+        url = 'https://auth.contabo.com/auth/realms/contabo/protocol/openid-connect/token'
+        data = {
+            'client_id': self.__client_id,
+            'client_secret': self.__client_secret,
+            'username': self.__api_user,
+            'password': self.__api_password,
+            'grant_type': 'password'
+        }
+        response = requests.post(url, data=data)
+        if response.status_code == 200:
+            response_json = json.loads(response.text)
+            access_token = response_json.get('access_token')
+            return access_token
+        else:
+            # Error handling if token retrieval fails
+            return None
+
+    def getInstanceID(self, access_token: str, hostname: str) -> str:
+        url = "https://api.contabo.com/v1/compute/instances"
+        headers = {
+            'Authorization': f"Bearer {access_token}",
+            'x-request-id': '51A87ECD-754E-4104-9C54-D01AD0F83406'
+        }
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            instancesData = response.json()
+            for item in instancesData["data"]:
+                if item['name'] == hostname:
+                    return item['instanceId']
+            return None
+        else:
+            # Error handling if token retrieval fails
+            return None
+ 
+    def getSnapshots(self, access_token: str, instance: str) -> dict:
+        url = f"https://api.contabo.com/v1/compute/instances/{instance}/snapshots"
+        headers = {
+            'Authorization': f"Bearer {access_token}",
+            'Content-Type': 'application/json',
+            'x-request-id': '04e0f898-37b4-48bc-a794-1a57abe6aa31',
+            'x-trace-id': '123213'
+        }
+        response = requests.get(url, headers=headers)
+        
+        if response.status_code == 200:
+            snapshots = response.json()
+            return snapshots
+        else:
+            # Error handling if token retrieval fails
+            return None
+
+def main():
+    parser = argparse.ArgumentParser(description="snapshot organisation")
+    parser.add_argument('--clientid', action='store', dest='clientid', default=None, help='client id', required=True)
+    parser.add_argument('--clientsecret', action='store', dest='clientsecret', default=None, help='client secret', required=True)
+    parser.add_argument('--apiuser', action='store', dest='apiuser', default=None, help='api user', required=True)
+    parser.add_argument('--apipassword', action='store', dest='apipassword', default=None, help='api password', required=True)
+    parser.add_argument('--hostname', action='store', dest='hostname', default=None, help='hostname', required=True)
+    
+    # parse argparse
+    options = parser.parse_args()
+    clientid: str = options.clientid
+    clientsecret: str = options.clientsecret
+    apiuser: str = options.apiuser
+    apipassword: str = options.apipassword
+    hostname: str = options.hostname.split(".")[0]
+
+    contabo: Contabo = Contabo(clientid=clientid, clientsecret=clientsecret, apiuser=apiuser, apipassword=apipassword)
+
+    accessToken = contabo.getAccessToken()
+    
+    instanceid = contabo.getInstanceID(access_token=accessToken, hostname=hostname)
+
+    snapshots = contabo.getSnapshots(access_token=accessToken, instance=instanceid)
+
+    print('<<<contabosnapshots:sep(0)>>>')
+    for snapshot in snapshots["data"]:
+        print(f"{snapshot['snapshotId']};{snapshot['name']};{snapshot['createdDate']};{snapshot['autoDeleteDate']}")
+
+if __name__ == "__main__":
+    main()
