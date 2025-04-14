@@ -10,6 +10,10 @@
 # snap1742473207;nextcloudupdate;2025-03-20T12:20:07.866Z;2025-04-19T12:20:07.863Z
 # snap1742373214;osupdate;2025-03-19T08:33:34.389Z;2025-04-18T08:33:34.388Z
 
+# testing
+# cmk -vI --detect-plugins=contabosnapshots <hostname>
+# cmk -v[vv] --detect-plugins=contabosnapshots [--debug] <hostname>
+
 from typing import Any, Mapping
 from cmk.agent_based.v2 import \
      AgentSection, CheckPlugin, Service, Result, State, DiscoveryResult, CheckResult
@@ -75,7 +79,7 @@ agent_section_contabosnapshots = AgentSection(
 
 check_plugin_contabosnapshots = CheckPlugin(
     name = "contabosnapshots",
-    service_name = "Contobo snapshots",
+    service_name = "Contabo snapshots",
     discovery_function = discovery_contabosnapshots,
     check_function = check_contabosnapshots,
     check_default_parameters = {"numberofsnapshots": ("fixed", (2,1))},
