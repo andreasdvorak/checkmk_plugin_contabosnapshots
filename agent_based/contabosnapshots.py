@@ -53,7 +53,6 @@ def discovery_contabosnapshots(section: Section) -> DiscoveryResult:
 def check_contabosnapshots(params, section: Section) -> CheckResult:
     """check the data"""
     number_of_snapshots = len(section)
-    print(params)
     for i in params["numberofsnapshots"]:
         if isinstance(i, tuple):
             warn_level, crit_level = i

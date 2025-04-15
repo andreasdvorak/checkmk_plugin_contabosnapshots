@@ -41,3 +41,28 @@ Hostname: The name of the host for which snapshots should be given.
     pylint -d E0401 -d E0611 $(git ls-files '*.py')
 
 ## Creation of mkp
+Manifest file tmp/check_mk/contabosnapshots.manifest.temp
+
+```
+{'author': 'Andreas Dvorak',
+ 'description': 'Monitoring of Contabo snapshots',
+ 'download_url': 'https://github.com/andreasdvorak/checkmk_plugin_contabosnapshots',
+ 'files': {'cmk_addons_plugins': ['contabosnapshots/agent_based/contabosnapshots.py',
+                                  'contabosnapshots/libexec/agent_contabosnapshots',
+                                  'contabosnapshots/rulesets/special_agent.py',
+                                  'contabosnapshots/server_side_calls/special_agent.py']
+           },
+ 'name': 'contabosnapshots',
+ 'title': 'Contabo snapshots monitoring with special agent plugin',
+ 'version': '1.0.0',
+ 'version.min_required': '2.3.0',
+ 'version.packaged': 'cmk-mkp-tool 0.2.0',
+ 'version.usable_until': None
+}
+```
+
+create the package
+
+    mkp package tmp/check_mk/contabosnapshots.manifest.temp
+
+Path to package: var/check_mk/packages_local
